@@ -1,13 +1,30 @@
-# create s3 bucket
+resource "aws_vpc" "sample" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Environment = var.environment
+    Name        = local.vpc_name
+  }
+}
+
+resource "aws_subnet" "sample" {
+  vpc_id     = aws_vpc.sample.id
+  cidr_block = "10.0.1.0/24"
+  tags = {
+    Environment = var.environment
+    Name        = "${var.environment}-subnet"
+  }
+}
 
 resource "aws_instance" "example" {
   count = var.instance_count
-  ami           = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+  ami   = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
   #region        = tolist(var.allowed_regions)[0]
-  region = var.config.region
-  instance_type = var.allowed_vm_types[0]
-  monitoring = var.monitoring_enable
+  region                      = var.config.region
+  instance_type               = var.allowed_vm_types[0]
+  monitoring                  = var.monitoring_enable
   associate_public_ip_address = var.associate_public_ip_address
+  subnet_id                   = aws_subnet.sample.id
+  vpc_security_group_ids      = [aws_security_group.allow_tls.id]
 
   tags = var.tags
 
@@ -16,6 +33,7 @@ resource "aws_instance" "example" {
 resource "aws_security_group" "allow_tls" {
   name        = "allow_tls"
   description = "Allow TLS inbound traffic and all outbound traffic"
+  vpc_id      = aws_vpc.sample.id
 
   tags = var.tags
 
@@ -34,7 +52,3 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1" # semantically equivalent to all ports
 }
-
-
-
-

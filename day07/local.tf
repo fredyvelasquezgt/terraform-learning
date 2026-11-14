@@ -1,3 +1,3 @@
 locals {
-  vpc_name    = "${var.environment}-VPC"
+  vpc_name = "${var.environment}-VPC"
 }
