@@ -108,4 +108,18 @@ variable "ingress_rules" {
     description = "HTTPS"
   }
   ]
+
+}
+
+variable "instance_sizes" {
+  default = {
+    dev = "t2.micro"
+    staging = "t3.small"
+    prod = "t3.large"
+
+  }
+}
+
+variable "environment" {
+  default = "Dev"
 }
